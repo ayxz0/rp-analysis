@@ -1,0 +1,13 @@
+# app setup
+===
+## routes
+- [ ] upload needs to be completed
+
+
+
+# functions (calculations)
+===
+- [ ] calculate avg data rate based on the timestamps
+- [ ] calculate peak thrust (lc)
+- [ ] chamber & manifold thing
+- [ ] pneumatics is useless basically(?)
