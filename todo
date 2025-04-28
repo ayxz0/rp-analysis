@@ -2,6 +2,9 @@
 ===
 ## routes
 - [ ] upload needs to be completed
+    how do deal with multiple files in upload?
+    features: naming of each file w/ step
+    mapping for the events
 
 
 
@@ -11,3 +14,7 @@
 - [ ] calculate peak thrust (lc)
 - [ ] chamber & manifold thing
 - [ ] pneumatics is useless basically(?)
+
+
+# flow
+===
