@@ -11,8 +11,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # MongoDB setup
 client = MongoClient("mongodb://localhost:27017/")
-db = client["rp_analysis"]
-collection = db["trimmed_data"]
+db = client["rp-analysis"]
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -73,8 +72,11 @@ def upload():
     except Exception as e:
         return jsonify({"error": f"Error saving trimmed CSV: {str(e)}"}), 500
 
-    # Insert trimmed data into MongoDB
-    insert_to_mongo(trimmed_headers, trimmed_data)
+    try:
+        collection_name = os.path.splitext(new_csv_name)[0]  # Use the file name without the .csv extension
+        insert_to_mongo(trimmed_headers, trimmed_data, collection_name)
+    except Exception as e:
+        return jsonify({"error": f"Error inserting into MongoDB: {str(e)}"}), 500
 
     return jsonify({"message": "File processed and saved successfully"}), 200
 
@@ -193,13 +195,16 @@ def save_trimmed_csv(file_path, headers, data):
         writer.writeheader()
         writer.writerows(data)
 
-def insert_to_mongo(headers, data):
+def insert_to_mongo(headers, data, collection_name):
     # Convert rows to MongoDB documents
     documents = [
         {header: row[header] for header in headers}
         for row in data
     ]
-    collection.insert_many(documents)
+
+    # Dynamically create a new collection with the given name
+    dynamic_collection = db[collection_name]
+    dynamic_collection.insert_many(documents)
 
 if __name__ == '__main__':
     app.run(debug=True)
