@@ -4,6 +4,10 @@ import json
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from pymongo import MongoClient
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})  
 
 app = Flask(__name__)
 UPLOAD_FOLDER = './uploads'

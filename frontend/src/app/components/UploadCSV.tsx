@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import Dropdown from "./mapping/Dropdown";
 import Tags from "./mapping/Tags";
+import Notification from "./Notification";
 
 interface UploadCSVProps {
   onClose: () => void;
@@ -9,10 +10,15 @@ interface UploadCSVProps {
 
 export default function UploadCSV({ onClose }: UploadCSVProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [csvName, setCsvName] = useState(""); // State for CSV name
   const [headers, setHeaders] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<{ [header: string]: string }>(
     {}
   );
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null); // State for notification
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const tags = ["Tank", "Chamber", "Manifold", "Fill", "Cross", "Pneumatics", "Disconnected", "Time"];
@@ -57,10 +63,16 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
       alert("Please select a file first.");
       return;
     }
+
+    if (!csvName) {
+      alert("Please enter a name for the CSV.");
+      return;
+    }
   
     const formData = new FormData();
     formData.append("file", file); // Add the CSV file
     formData.append("tags", JSON.stringify(selectedTags)); // Add the tags/mapping as JSON
+    formData.append("new_csv_name", csvName); // Add the CSV name
   
     try {
       const response = await fetch("http://localhost:5000/upload", {
@@ -69,20 +81,21 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
       });
   
       if (response.ok) {
-        alert("File uploaded successfully!");
+        setNotification({ message: `Successfully uploaded ${csvName}`, type: "success" });
         resetState(); // Reset state after successful upload
         onClose(); // Close the popup
       } else {
-        alert("Failed to upload file.");
+        setNotification({ message: "Unsuccessful upload", type: "error" });
       }
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert("An error occurred while uploading the file.");
+      setNotification({ message: "An error occurred while uploading the file.", type: "error" });
     }
   };
 
   const resetState = () => {
     setFile(null);
+    setCsvName(""); // Reset CSV name
     setHeaders([]);
     setSelectedTags({});
   };
@@ -119,6 +132,23 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
 
         {/* Display selected file */}
         {file && <p className="text-black mb-6">Selected File: {file.name}</p>}
+
+        {/* Input for CSV Name */}
+        {file && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              CSV Name
+            </label>
+            <input
+              type="text"
+              value={csvName}
+              onChange={(e) => setCsvName(e.target.value)}
+              placeholder="Enter a name for the CSV"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            ex. id_event_MMDDYY
+          </div>
+        )}
 
         {/* Dropdowns for headers */}
         {headers.length > 0 && (
@@ -167,6 +197,15 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
           Close
         </button>
       </div>
+
+      {/* Notification */}
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </div>
   );
 }

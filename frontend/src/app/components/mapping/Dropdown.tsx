@@ -17,7 +17,7 @@ export default function Dropdown({ header, tags, selectedTags, onTagSelect }: Dr
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 w-1/2 inline-block px-2"> {/* Limit width to half and allow inline */}
       <label className="block text-sm font-medium text-gray-700 mb-1">
         {header}
       </label>
