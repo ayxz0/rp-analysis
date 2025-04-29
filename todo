@@ -1,20 +1,22 @@
 # app setup
-===
-## routes
-- [ ] upload needs to be completed
-    how do deal with multiple files in upload?
-    features: naming of each file w/ step
-    mapping for the events
 
+## main
+- upload: completed!! DONE: (CORS problem)
+    - add mapping tags for load cells oops
+    - test if not doing all tags will have negative impact
+- display data now?
+    - get request data 
 
+main page: 
+- DONE: get and display all the "events" aka all collections;
+- component for displaying each of the "events" should have name, date, author
+
+event page
+- display graphs and health data
 
 # functions (calculations)
 ===
-- [ ] calculate avg data rate based on the timestamps
-- [ ] calculate peak thrust (lc)
-- [ ] chamber & manifold thing
-- [ ] pneumatics is useless basically(?)
-
-
-# flow
-===
+- calculate avg data rate based on the timestamps
+- calculate peak thrust (lc)
+- chamber & manifold thing
+- pneumatics is useless basically(?)

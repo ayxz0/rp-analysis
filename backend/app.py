@@ -7,15 +7,23 @@ from pymongo import MongoClient
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-app = Flask(__name__)
 UPLOAD_FOLDER = './uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # MongoDB setup
 client = MongoClient("mongodb://localhost:27017/")
 db = client["rp-analysis"]
+
+@app.route('/collections', methods=['GET'])
+def get_collections():
+    try:
+        # Fetch all collection names from the database
+        collection_names = db.list_collection_names()
+        return jsonify({"collections": [{"name": name} for name in collection_names]}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching collections: {str(e)}"}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload():
