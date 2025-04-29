@@ -57,17 +57,17 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
       alert("Please select a file first.");
       return;
     }
-
+  
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("tags", JSON.stringify(selectedTags));
-
+    formData.append("file", file); // Add the CSV file
+    formData.append("tags", JSON.stringify(selectedTags)); // Add the tags/mapping as JSON
+  
     try {
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData,
       });
-
+  
       if (response.ok) {
         alert("File uploaded successfully!");
         resetState(); // Reset state after successful upload
