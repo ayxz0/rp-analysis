@@ -16,12 +16,25 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 client = MongoClient("mongodb://localhost:27017/")
 db = client["rp-analysis"]
 
+from datetime import datetime
+
 @app.route('/collections', methods=['GET'])
 def get_collections():
     try:
         # Fetch all collection names from the database
-        collection_names = db.list_collection_names()
-        return jsonify({"collections": [{"name": name} for name in collection_names]}), 200
+        collections = []
+        for name in db.list_collection_names():
+            # Set default metadata
+            metadata = {
+                "author": "admin",  # Default author
+                "uploadDate": datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Current date and time
+            }
+            collections.append({
+                "name": name,
+                "author": metadata["author"],
+                "uploadDate": metadata["uploadDate"]
+            })
+        return jsonify({"collections": collections}), 200
     except Exception as e:
         return jsonify({"error": f"Error fetching collections: {str(e)}"}), 500
 
@@ -134,10 +147,50 @@ def process_csv(file_path, tags):
     except Exception as e:
         raise ValueError(f"Error reading file: {str(e)}")
 
-    # Identify the "start of flow" and "end of flow"
+    # # Identify the "start of flow" and "end of flow"
+    # start_index = None
+    # end_index = None
+    # start_slope_threshold = 10000  # Threshold for detecting the start of flow
+
+    # # Detect the start of flow based on slope
+    # for i in range(1, len(manifold_values)):
+    #     slope = (manifold_values[i] - manifold_values[i - 1]) / (timestamps[i] - timestamps[i - 1])
+    #     if start_index is None and slope > start_slope_threshold:
+    #         start_index = i
+    #         break
+
+    # if start_index is None:
+    #     raise ValueError("Flow start could not be detected.")
+
+    # # Calculate the average of manifold values before the start of flow
+    # pre_flow_average = sum(manifold_values[:start_index]) / len(manifold_values[:start_index])
+
+    # # Detect the end of flow based on proximity to the pre-flow average
+    # for i in range(start_index + 1, len(manifold_values)):
+    #     if abs(manifold_values[i] - pre_flow_average) <= 10:
+    #         end_index = i
+    #         break
+
+    # if end_index is None:
+    #     raise ValueError("Flow end could not be detected.")
+
+    # # Add a 5-second buffer to the start and end
+    # start_time = max(0, timestamps[start_index] - 5)
+    # end_time = timestamps[end_index] + 5
+    
+    start_time, end_time = find_start_and_end_times(timestamps, manifold_values)
+
+    # Trim the data to the range of interest
+    trimmed_data = [
+        row for i, row in enumerate(data_rows)
+        if start_time <= timestamps[i] <= end_time
+    ]
+
+    return trimmed_data, headers
+
+def find_start_and_end_times(timestamps, manifold_values, start_slope_threshold=10000, proximity_threshold=10, buffer_seconds=5):
     start_index = None
     end_index = None
-    start_slope_threshold = 10000  # Threshold for detecting the start of flow
 
     # Detect the start of flow based on slope
     for i in range(1, len(manifold_values)):
@@ -154,52 +207,19 @@ def process_csv(file_path, tags):
 
     # Detect the end of flow based on proximity to the pre-flow average
     for i in range(start_index + 1, len(manifold_values)):
-        if abs(manifold_values[i] - pre_flow_average) <= 10:
+        if abs(manifold_values[i] - pre_flow_average) <= proximity_threshold:
             end_index = i
             break
 
     if end_index is None:
         raise ValueError("Flow end could not be detected.")
 
-    # Add a 5-second buffer to the start and end
-    start_time = max(0, timestamps[start_index] - 5)
-    end_time = timestamps[end_index] + 5
+    # Add a buffer to the start and end times
+    start_time = max(0, timestamps[start_index] - buffer_seconds)
+    end_time = timestamps[end_index] + buffer_seconds
 
-    # Trim the data to the range of interest
-    trimmed_data = [
-        row for i, row in enumerate(data_rows)
-        if start_time <= timestamps[i] <= end_time
-    ]
+    return start_time, end_time
 
-    return trimmed_data, headers
-
-def detect_flow(timestamps, manifold_values):
-    start_index = None
-    end_index = None
-    start_slope_threshold = 10000  # Threshold for detecting the start of flow
-    ambient_threshold = 50         # Threshold for detecting ambient pressure
-    ambient_duration = 5           # Duration (in seconds) for ambient pressure to confirm end of flow
-
-    # Detect the start of flow based on slope
-    for i in range(1, len(manifold_values)):
-        slope = (manifold_values[i] - manifold_values[i - 1]) / (timestamps[i] - timestamps[i - 1])
-        if start_index is None and slope > start_slope_threshold:
-            return 100, 101
-            start_index = i
-
-    # Detect the end of flow based on ambient pressure
-    if start_index is not None:
-        for i in range(start_index + 1, len(manifold_values)):
-            if manifold_values[i] < ambient_threshold:
-                # Check if the pressure remains below the threshold for the specified duration
-                ambient_start_time = timestamps[i]
-                ambient_end_time = ambient_start_time + ambient_duration
-                if all(manifold_values[j] < ambient_threshold for j in range(i, len(manifold_values))
-                       if timestamps[j] <= ambient_end_time):
-                    end_index = i
-                    break
-
-    return start_index, end_index
 
 def save_trimmed_csv(file_path, headers, data):
     with open(file_path, mode='w', newline='') as file:

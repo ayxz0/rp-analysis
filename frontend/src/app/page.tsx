@@ -2,9 +2,12 @@
 import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import UploadCSV from "./components/UploadCSV";
+import Event from "./components/Event";
 
 interface Collection {
   name: string;
+  author: string;
+  uploadDate: string;
 }
 
 export default function Home() {
@@ -51,10 +54,11 @@ export default function Home() {
       <main className="p-6">
         {/* Page Header with "New Data" Button */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-blue-800">Events</h1>
+          <h1 className="text-3xl font-bold text-rp-blue">Events</h1>
           <button
             onClick={handleNewDataClick}
-            className="px-4 py-2 bg-blue-800 text-white rounded-md shadow-sm hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            // TOFIXHERE
+            className="px-4 py-2 bg-rp-blue text-white rounded-md shadow-sm hover:bg-blue-900 focus:outline-rp-navy focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             New Data
           </button>
@@ -63,17 +67,15 @@ export default function Home() {
         <hr className="border-gray-300 mb-6" />
 
         {/* Collections List */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {collections.length > 0 ? (
             collections.map((collection, index) => (
-              <div
+              <Event
                 key={index}
-                className="p-4 border border-gray-300 rounded shadow-sm"
-              >
-                <h2 className="text-lg font-semibold text-gray-800">
-                  {collection.name}
-                </h2>
-              </div>
+                name={collection.name}
+                author={collection.author}
+                uploadDate={collection.uploadDate}
+              />
             ))
           ) : (
             <p className="text-gray-500">No collections found.</p>

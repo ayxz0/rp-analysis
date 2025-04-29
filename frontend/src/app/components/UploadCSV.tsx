@@ -124,7 +124,7 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
         {!file && (
           <button
             onClick={handleButtonClick}
-            className="rounded bg-blue-500 text-white px-4 py-2 hover:bg-blue-600 mb-6"
+            className="rounded bg-rp-navy text-white px-4 py-2 hover:bg-blue-600 mb-6"
           >
             Select File
           </button>
