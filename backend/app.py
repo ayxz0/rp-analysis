@@ -76,6 +76,211 @@ def get_burn_time(event_id):
         print(f"Error calculating burn time: {e}")  # Debugging
         return jsonify({"error": f"Error calculating burn time: {str(e)}"}), 500
 
+@app.route('/<event_id>/dp', methods=['GET'])
+def get_differential_pressure(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "Tank": 1, "Manifold": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+        dp_data = []
+        for point in data:
+            if "Time" in point and "Tank" in point and "Manifold" in point:
+                adjusted_time = (int(point["Time"]) - start_time) / 1_000_000_000  # Convert nanoseconds to seconds
+                dp = float(point["Tank"]) - float(point["Manifold"])
+                dp_data.append({"Time": adjusted_time, "DP": dp})
+
+        return jsonify({"data": dp_data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error calculating differential pressure: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/tank', methods=['GET'])
+def get_tank_pressure(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "Tank": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+        tank_data = []
+        for point in data:
+            if "Time" in point and "Tank" in point:
+                adjusted_time = (int(point["Time"]) - start_time) / 1_000_000_000  # Convert nanoseconds to seconds
+                tank_data.append({"Time": adjusted_time, "Tank": float(point["Tank"])})
+
+        return jsonify({"data": tank_data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching tank pressure: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/tanklc', methods=['GET'])
+def get_tanklc(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "TankLC": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+        tanklc_data = []
+        for point in data:
+            if "Time" in point and "TankLC" in point:
+                adjusted_time = (int(point["Time"]) - start_time) / 1_000_000_000  # Convert nanoseconds to seconds
+                tanklc_data.append({"Time": adjusted_time, "TankLC": float(point["TankLC"])})
+
+        return jsonify({"data": tanklc_data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching TankLC data: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/thrustlc', methods=['GET'])
+def get_thrustlc(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "ThrustLC": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+        thrustlc_data = []
+        for point in data:
+            if "Time" in point and "ThrustLC" in point:
+                adjusted_time = (int(point["Time"]) - start_time) / 1_000_000_000  # Convert nanoseconds to seconds
+                thrustlc_data.append({"Time": adjusted_time, "ThrustLC": float(point["ThrustLC"])})
+
+        return jsonify({"data": thrustlc_data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching ThrustLC data: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/pressures', methods=['GET'])
+def get_pressures(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "Chamber": 1, "Manifold": 1, "Tank": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+        pressures_data = []
+        for point in data:
+            if "Time" in point:
+                adjusted_time = (int(point["Time"]) - start_time) / 1_000_000_000  # Convert nanoseconds to seconds
+                pressures_data.append({
+                    "Time": adjusted_time,
+                    "Chamber": float(point.get("Chamber", 0)),
+                    "Manifold": float(point.get("Manifold", 0)),
+                    "Tank": float(point.get("Tank", 0)),
+                })
+
+        return jsonify({"data": pressures_data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching pressures: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/mdot', methods=['GET'])
+def get_mass_flow_rate(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "TankLC": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+        mdot_data = []
+        for i in range(1, len(data)):
+            time_diff = (int(data[i]["Time"]) - int(data[i - 1]["Time"])) / 1_000_000_000  # Convert nanoseconds to seconds
+            if time_diff > 0:
+                mdot = (float(data[i]["TankLC"]) - float(data[i - 1]["TankLC"])) / time_diff
+                adjusted_time = (int(data[i]["Time"]) - start_time) / 1_000_000_000
+                mdot_data.append({"Time": adjusted_time, "Mdot": mdot})
+
+        return jsonify({"data": mdot_data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error calculating mass flow rate: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/stiff', methods=['GET'])
+def get_injector_stiffness(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "Manifold": 1, "Chamber": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+        stiffness_data = []
+        for point in data:
+            if "Manifold" in point and "Chamber" in point and float(point["Chamber"]) != 0:
+                adjusted_time = (int(point["Time"]) - start_time) / 1_000_000_000  # Convert nanoseconds to seconds
+                stiffness = (float(point["Manifold"]) - float(point["Chamber"])) / float(point["Chamber"])
+                stiffness_data.append({"Time": adjusted_time, "Stiffness": stiffness})
+
+        return jsonify({"data": stiffness_data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error calculating injector stiffness: {str(e)}"}), 500
+
+@app.route('/<event_id>/peakThrust', methods=['GET'])
+def get_peak_thrust(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "ThrustLC": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        peak_thrust = max(float(point["ThrustLC"]) for point in data if "ThrustLC" in point)
+
+        return jsonify({"peakThrust": peak_thrust}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching peak thrust: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/peakChamber', methods=['GET'])
+def get_peak_chamber(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Chamber": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        peak_chamber = max(float(point["Chamber"]) for point in data if "Chamber" in point)
+
+        return jsonify({"peakChamber": peak_chamber}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching peak chamber pressure: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/dataRate', methods=['GET'])
+def get_data_rate(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        time_diffs = [
+            (float(data[i]["Time"]) - float(data[i - 1]["Time"])) / 1_000_000_000  # Convert to seconds
+            for i in range(1, len(data))
+        ]
+        avg_data_rate = sum(time_diffs) / len(time_diffs) if time_diffs else 0
+
+        return jsonify({"dataRate": avg_data_rate}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error calculating data rate: {str(e)}"}), 500
 
 @app.route('/collections', methods=['GET'])
 def get_collections():
@@ -205,37 +410,6 @@ def process_csv(file_path, tags):
         raise FileNotFoundError(f"Error: File '{file_path}' not found.")
     except Exception as e:
         raise ValueError(f"Error reading file: {str(e)}")
-
-    # # Identify the "start of flow" and "end of flow"
-    # start_index = None
-    # end_index = None
-    # start_slope_threshold = 10000  # Threshold for detecting the start of flow
-
-    # # Detect the start of flow based on slope
-    # for i in range(1, len(manifold_values)):
-    #     slope = (manifold_values[i] - manifold_values[i - 1]) / (timestamps[i] - timestamps[i - 1])
-    #     if start_index is None and slope > start_slope_threshold:
-    #         start_index = i
-    #         break
-
-    # if start_index is None:
-    #     raise ValueError("Flow start could not be detected.")
-
-    # # Calculate the average of manifold values before the start of flow
-    # pre_flow_average = sum(manifold_values[:start_index]) / len(manifold_values[:start_index])
-
-    # # Detect the end of flow based on proximity to the pre-flow average
-    # for i in range(start_index + 1, len(manifold_values)):
-    #     if abs(manifold_values[i] - pre_flow_average) <= 10:
-    #         end_index = i
-    #         break
-
-    # if end_index is None:
-    #     raise ValueError("Flow end could not be detected.")
-
-    # # Add a 5-second buffer to the start and end
-    # start_time = max(0, timestamps[start_index] - 5)
-    # end_time = timestamps[end_index] + 5
     
     start_time, end_time = find_start_and_end_times(timestamps, manifold_values)
 
@@ -247,7 +421,7 @@ def process_csv(file_path, tags):
 
     return trimmed_data, headers
 
-def find_start_and_end_times(timestamps, manifold_values, start_slope_threshold=10000, proximity_threshold=10, buffer_seconds=5):
+def find_start_and_end_times(timestamps, manifold_values, start_slope_threshold=5000, proximity_threshold=10, buffer_seconds=5):
     start_index = None
     end_index = None
 

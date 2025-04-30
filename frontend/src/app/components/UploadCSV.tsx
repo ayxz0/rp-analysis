@@ -122,7 +122,7 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
                 Select File
               </button>
             ) : (
-              <p className="w-full text-center text-sm font-medium text-gray-700">
+              <p className="w-full text-sm font-medium text-gray-700">
                 Selected File: <span className="text-[var(--color-rp-blue)]">{file.name}</span>
               </p>
             )}
