@@ -14,6 +14,7 @@ export default function EventPage() {
     peakChamber: null,
     dataRate: null,
     burnTime: null,
+    peakMdot: null, // Add peakMdot to the data panel state
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,23 +45,44 @@ export default function EventPage() {
 
               // Handle multiple Y-fields (e.g., pressures)
               if (endpoint.yFields) {
+                const datasets = endpoint.yFields.map((field) => ({
+                  label: field,
+                  data: result.data
+                    .map((point: any) => ({
+                      x: point.Time,
+                      y: point[field],
+                    }))
+                    .filter((point: any) => point.y !== 500), // Exclude points with y = 500
+                  borderColor: field === "Chamber" ? "#FF5733" : field === "Manifold" ? "#33C3FF" : "#33FF57", // Different colors for each field
+                  backgroundColor: "rgba(0, 0, 0, 0)", // Transparent background
+                }));
+
+                // Skip the graph if all datasets are empty
+                if (datasets.every((dataset) => dataset.data.length === 0)) {
+                  return null;
+                }
+
                 return {
                   label: endpoint.label,
                   xAxisLabel: endpoint.xAxis,
                   yAxisLabel: endpoint.yAxis,
-                  datasets: endpoint.yFields.map((field) => ({
-                    label: field,
-                    data: result.data.map((point: any) => ({
-                      x: point.Time,
-                      y: point[field],
-                    })),
-                    borderColor: field === "Chamber" ? "#FF5733" : field === "Manifold" ? "#33C3FF" : "#33FF57", // Different colors for each field
-                    backgroundColor: "rgba(0, 0, 0, 0)", // Transparent background
-                  })),
+                  datasets,
                 };
               }
 
               // Handle single Y-field
+              const data = result.data
+                .map((point: any) => ({
+                  x: point.Time,
+                  y: point[endpoint.yField],
+                }))
+                .filter((point: any) => point.y !== 500); // Exclude points with y = 500
+
+              // Skip the graph if the dataset is empty
+              if (data.length === 0) {
+                return null;
+              }
+
               return {
                 label: endpoint.label,
                 xAxisLabel: endpoint.xAxis,
@@ -68,10 +90,7 @@ export default function EventPage() {
                 datasets: [
                   {
                     label: endpoint.label,
-                    data: result.data.map((point: any) => ({
-                      x: point.Time,
-                      y: point[endpoint.yField],
-                    })),
+                    data,
                     borderColor: "#1c2f50",
                     backgroundColor: "rgba(28, 47, 80, 0.2)",
                   },
@@ -84,7 +103,7 @@ export default function EventPage() {
           })
         );
 
-        // Filter out null graphs (failed endpoints)
+        // Filter out null graphs (failed endpoints or excluded graphs)
         setGraphs(graphData.filter((graph) => graph !== null));
 
         // Fetch data for the data panel
@@ -92,6 +111,7 @@ export default function EventPage() {
         let peakChamber = null;
         let dataRate = null;
         let burnTime = null;
+        let peakMdot = null;
 
         try {
           const peakThrustResponse = await fetch(`http://localhost:5000/${event_id}/peakThrust`);
@@ -141,11 +161,24 @@ export default function EventPage() {
           console.log("Error fetching burn time:", err instanceof Error ? err.message : "Unknown error");
         }
 
+        try {
+          const peakMdotResponse = await fetch(`http://localhost:5000/${event_id}/peakMdot`);
+          if (peakMdotResponse.ok) {
+            const mdotData = await peakMdotResponse.json();
+            peakMdot = mdotData.peakMdot;
+          } else {
+            console.log("Failed to fetch peak Mdot data");
+          }
+        } catch (err) {
+          console.log("Error fetching peak Mdot:", err instanceof Error ? err.message : "Unknown error");
+        }
+
         setDataPanelValues({
           peakThrust,
           peakChamber,
           dataRate,
           burnTime,
+          peakMdot,
         });
 
         setLoading(false);
@@ -162,46 +195,47 @@ export default function EventPage() {
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-gray-100 min-h-screen">
       {/* Header */}
       <Header onHomeClick={handleHomeClick} />
 
-      {/* Event Content */}
+      {/* Main Content */}
       <div className="p-6">
-        <h1 className="text-3xl font-bold text-rp-blue mb-4">{event_id}</h1>
-        <p className="text-gray-600 mb-6">Below are the graphs for the event data:</p>
-
-        {/* Layout for Graphs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {graphs.map((graph, index) => (
-            <div key={index} className="p-4 border border-gray-300 rounded shadow-sm bg-white">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Graphs */}
+          <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {graphs.map((graph, index) => (
               <Graph
-                labels={graph.datasets[0].data.map((point: any) => point.x.toFixed(2))} // Use the x values from the first dataset
-                datasets={graph.datasets} // Pass the datasets directly
+                key={index}
+                labels={graph.datasets[0].data.map((point: any) => point.x.toFixed(2))}
+                datasets={graph.datasets}
                 xAxisLabel={graph.xAxisLabel}
                 yAxisLabel={graph.yAxisLabel}
               />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Data Panel */}
-        <div className="mt-6 p-4 border border-gray-300 rounded shadow-sm bg-white">
-          <h2 className="text-xl font-bold text-rp-blue mb-4">Data Panel</h2>
-          <ul className="space-y-2">
-            <li>
-              <strong>Peak Thrust (LC):</strong> {dataPanelValues.peakThrust ?? "N/A"} N
-            </li>
-            <li>
-              <strong>Peak Chamber Pressure:</strong> {dataPanelValues.peakChamber ?? "N/A"} PSI
-            </li>
-            <li>
-              <strong>Data Rate:</strong> {dataPanelValues.dataRate ?? "N/A"} Hz
-            </li>
-            <li>
-              <strong>Burn Time:</strong> {dataPanelValues.burnTime ?? "N/A"} s
-            </li>
-          </ul>
+            {/* Data Panel */}
+            <div className="p-4 border border-gray-300 rounded-lg shadow-sm bg-white sticky top-28 h-75">
+            <h2 className="text-2xl font-bold text-rp-blue mb-4">Data Panel</h2>
+            <ul className="space-y-4 text-lg text-rp-blue">
+                <li>
+                <strong>Peak Thrust (LC):</strong> {dataPanelValues.peakThrust ?? "N/A"} N
+                </li>
+                <li>
+                <strong>Peak Chamber Pressure:</strong> {dataPanelValues.peakChamber ?? "N/A"} PSI
+                </li>
+                <li>
+                <strong>Data Rate:</strong> {dataPanelValues.dataRate ?? "N/A"} Hz
+                </li>
+                <li>
+                <strong>Burn Time:</strong> {dataPanelValues.burnTime ?? "N/A"} s
+                </li>
+                <li>
+                <strong>Peak Mdot:</strong> {dataPanelValues.peakMdot ?? "N/A"} kg/s
+                </li>
+            </ul>
+            </div>
         </div>
       </div>
     </div>

@@ -39,6 +39,7 @@ export default function Graph({ labels, datasets, xAxisLabel = "X-Axis", yAxisLa
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false, // Allow the graph to dynamically adjust its height
     plugins: {
       legend: {
         display: true,
@@ -71,7 +72,8 @@ export default function Graph({ labels, datasets, xAxisLabel = "X-Axis", yAxisLa
   };
 
   return (
-    <div className="w-full h-96">
+    <div className="w-full h-[500px] p-4 border border-gray-300 rounded-lg shadow-sm bg-white">
+      {/* Set a fixed height of 500px for the graph container */}
       <Line data={chartData} options={options} />
     </div>
   );

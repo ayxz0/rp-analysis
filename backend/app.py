@@ -262,6 +262,32 @@ def get_peak_chamber(event_id):
     except Exception as e:
         return jsonify({"error": f"Error fetching peak chamber pressure: {str(e)}"}), 500
 
+@app.route('/<event_id>/peakMdot', methods=['GET'])
+def get_peak_mdot(event_id):
+    try:
+        collection = db[event_id]
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "TankLC": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        # Ensure Time is an integer and calculate Mdot
+        mdot_values = []
+        for i in range(1, len(data)):
+            time_diff = (int(data[i]["Time"]) - int(data[i - 1]["Time"])) / 1_000_000_000  # Convert nanoseconds to seconds
+            if time_diff > 0:
+                mdot = (float(data[i]["TankLC"]) - float(data[i - 1]["TankLC"])) / time_diff
+                mdot_values.append(mdot)
+
+        if not mdot_values:
+            return jsonify({"error": "No valid Mdot values found"}), 404
+
+        # Calculate the peak Mdot
+        peak_mdot = max(mdot_values)
+
+        return jsonify({"peakMdot": peak_mdot}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching peak Mdot: {str(e)}"}), 500
 
 @app.route('/<event_id>/dataRate', methods=['GET'])
 def get_data_rate(event_id):
@@ -278,7 +304,7 @@ def get_data_rate(event_id):
         ]
         avg_data_rate = sum(time_diffs) / len(time_diffs) if time_diffs else 0
 
-        return jsonify({"dataRate": avg_data_rate}), 200
+        return jsonify({"dataRate": 1.0/(avg_data_rate)}), 200
     except Exception as e:
         return jsonify({"error": f"Error calculating data rate: {str(e)}"}), 500
 

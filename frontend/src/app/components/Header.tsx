@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export default function Header({ onHomeClick }: HeaderProps) {
   return (
-    <header className="bg-white border-b border-gray-300 py-4 px-6 flex items-center justify-between shadow-md">
+    <header className="bg-white border-b border-gray-300 py-4 px-6 flex items-center justify-between shadow-md sticky top-0 z-10 bg-white">
       {/* Home Button */}
       <button
         onClick={onHomeClick}
