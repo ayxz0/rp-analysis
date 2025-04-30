@@ -29,8 +29,8 @@ export default function EventPage() {
         const endpoints = [
           { key: "dp", url: `https://rp-analysis.onrender.com/${event_id}/dp`, label: "Differential Pressure (DP) vs Time", xAxis: "Time (s)", yAxis: "DP (PSI)", yField: "DP" },
           { key: "tank", url: `https://rp-analysis.onrender.com/${event_id}/tank`, label: "Tank Pressure vs Time", xAxis: "Time (s)", yAxis: "Tank Pressure (PSI)", yField: "Tank" },
-          { key: "tanklc", url: `https://rp-analysis.onrender.com/${event_id}/tanklc`, label: "TankLC vs Time", xAxis: "Time (s)", yAxis: "TankLC (kg)", yField: "TankLC" },
-          { key: "thrustlc", url: `https://rp-analysis.onrender.com/${event_id}/thrustlc`, label: "ThrustLC vs Time", xAxis: "Time (s)", yAxis: "ThrustLC (N)", yField: "ThrustLC" },
+          { key: "tanklc", url: `https://rp-analysis.onrender.com/${event_id}/tanklc`, label: "TankLC vs Time", xAxis: "Time (s)", yAxis: "TankLC (lbs)", yField: "TankLC" },
+          { key: "thrustlc", url: `https://rp-analysis.onrender.com/${event_id}/thrustlc`, label: "ThrustLC vs Time", xAxis: "Time (s)", yAxis: "ThrustLC (lbs)", yField: "ThrustLC" },
           { key: "pressures", url: `https://rp-analysis.onrender.com/${event_id}/pressures`, label: "Pressures (Chamber, Manifold, Tank) vs Time", xAxis: "Time (s)", yAxis: "Pressure (PSI)", yFields: ["Chamber", "Manifold", "Tank"] },
           { key: "mdot", url: `https://rp-analysis.onrender.com/${event_id}/mdot`, label: "Mass Flow Rate (Mdot) vs Time", xAxis: "Time (s)", yAxis: "Mdot (kg/s)", yField: "Mdot" },
           { key: "stiff", url: `https://rp-analysis.onrender.com/${event_id}/stiff`, label: "Injector Stiffness vs Time", xAxis: "Time (s)", yAxis: "Stiffness", yField: "Stiffness" },
@@ -220,7 +220,7 @@ export default function EventPage() {
             <h2 className="text-2xl font-bold text-rp-blue mb-4">Data: {eventId}</h2>
             <ul className="space-y-4 text-lg text-rp-blue">
                 <li>
-                <strong>Peak Thrust (LC):</strong> {dataPanelValues.peakThrust ?? "N/A"} N
+                <strong>Peak Thrust (LC):</strong> {dataPanelValues.peakThrust ?? "N/A"} lbs
                 </li>
                 <li>
                 <strong>Peak Chamber Pressure:</strong> {dataPanelValues.peakChamber ?? "N/A"} PSI
