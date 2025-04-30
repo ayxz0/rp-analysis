@@ -46,7 +46,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen relative">
       {/* Header */}
       <Header onHomeClick={handleHomeClick} />
 
@@ -54,11 +54,10 @@ export default function Home() {
       <main className="p-6">
         {/* Page Header with "New Data" Button */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-rp-blue">Events</h1>
+          <h1 className="text-3xl font-bold text-[var(--color-rp-blue)]">Events</h1>
           <button
             onClick={handleNewDataClick}
-            // TOFIXHERE
-            className="px-4 py-2 bg-rp-blue text-white rounded-md shadow-sm hover:bg-blue-900 focus:outline-rp-navy focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="px-4 py-2 border border-[var(--color-rp-blue)] bg-[var(--color-rp-blue)] text-white rounded-md shadow-sm hover:bg-white hover:text-[var(--color-rp-blue)] transition duration-200"
           >
             New Data
           </button>
@@ -69,14 +68,20 @@ export default function Home() {
         {/* Collections List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {collections.length > 0 ? (
-            collections.map((collection, index) => (
-              <Event
-                key={index}
-                name={collection.name}
-                author={collection.author}
-                uploadDate={collection.uploadDate}
-              />
-            ))
+            collections
+              .filter((collection) => collection.name !== "system.views") // Exclude "system.views"
+              .map((collection, index) => (
+                <div
+                  key={index}
+                  className="transition-shadow duration-200 hover:shadow-lg" // Smooth shadow transition
+                >
+                  <Event
+                    name={collection.name}
+                    author={collection.author}
+                    uploadDate={collection.uploadDate}
+                  />
+                </div>
+              ))
           ) : (
             <p className="text-gray-500">No collections found.</p>
           )}
@@ -84,7 +89,11 @@ export default function Home() {
       </main>
 
       {/* Upload CSV Panel */}
-      {isPanelOpen && <UploadCSV onClose={handleClosePanel} />}
+      {isPanelOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <UploadCSV onClose={handleClosePanel} />
+        </div>
+      )}
     </div>
   );
 }

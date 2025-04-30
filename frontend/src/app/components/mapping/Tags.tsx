@@ -12,7 +12,9 @@ const tagColors: { [tag: string]: string } = {
   Fill: "bg-red-100 text-red-800",
   Cross: "bg-purple-100 text-purple-800",
   Pneumatics: "bg-pink-100 text-pink-800",
-  Disconnected: "bg-gray-100 text-gray-800",
+  TankLC: "bg-emerald-100 text-pink-800",
+  ThrustLC: "bg-amber-100 text-pink-800",
+  Disconnected: "bg-gray-100 text-gray-500",
   Time: "bg-gray-100 text-black",
 };
 

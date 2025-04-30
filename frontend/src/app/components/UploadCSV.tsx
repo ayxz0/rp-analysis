@@ -10,18 +10,16 @@ interface UploadCSVProps {
 
 export default function UploadCSV({ onClose }: UploadCSVProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [csvName, setCsvName] = useState(""); // State for CSV name
+  const [csvName, setCsvName] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<{ [header: string]: string }>(
-    {}
-  );
+  const [selectedTags, setSelectedTags] = useState<{ [header: string]: string }>({});
   const [notification, setNotification] = useState<{
     message: string;
     type: "success" | "error";
-  } | null>(null); // State for notification
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const tags = ["Tank", "Chamber", "Manifold", "Fill", "Cross", "Pneumatics", "Disconnected", "Time"];
+  const tags = ["Tank", "Chamber", "Manifold", "Fill", "Cross", "Pneumatics", "TankLC", "ThrustLC", "Disconnected", "Time"];
 
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -49,12 +47,10 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
   };
 
   const handleTagSelect = (header: string, tag: string) => {
-    // Allow "Disconnected" to be assigned multiple times
     if (tag !== "Disconnected" && Object.values(selectedTags).includes(tag)) {
       alert(`The tag "${tag}" is already assigned to another header.`);
       return;
     }
-  
     setSelectedTags((prev) => ({ ...prev, [header]: tag }));
   };
 
@@ -68,22 +64,22 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
       alert("Please enter a name for the CSV.");
       return;
     }
-  
+
     const formData = new FormData();
-    formData.append("file", file); // Add the CSV file
-    formData.append("tags", JSON.stringify(selectedTags)); // Add the tags/mapping as JSON
-    formData.append("new_csv_name", csvName); // Add the CSV name
-  
+    formData.append("file", file);
+    formData.append("tags", JSON.stringify(selectedTags));
+    formData.append("new_csv_name", csvName);
+
     try {
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData,
       });
-  
+
       if (response.ok) {
         setNotification({ message: `Successfully uploaded ${csvName}`, type: "success" });
-        resetState(); // Reset state after successful upload
-        onClose(); // Close the popup
+        resetState();
+        onClose();
       } else {
         setNotification({ message: "Unsuccessful upload", type: "error" });
       }
@@ -95,107 +91,104 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
 
   const resetState = () => {
     setFile(null);
-    setCsvName(""); // Reset CSV name
+    setCsvName("");
     setHeaders([]);
     setSelectedTags({});
   };
 
-  // Check if all headers have been assigned a tag
   const allHeadersTagged = headers.every((header) => selectedTags[header]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div
-        className="bg-white p-8 rounded-lg shadow-lg w-[70%] h-[70%] flex flex-col overflow-y-auto text-black"
-        style={{ maxWidth: "1200px", maxHeight: "800px" }}
-      >
-        <h2 className="text-2xl font-bold mb-6 text-black">Upload New Data</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg w-[70%] max-w-3xl max-h-[80vh] flex flex-col text-black">
+        {/* Fixed Header Section */}
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-[var(--color-rp-blue)] mb-4">Upload New Data</h2>
 
-        {/* Hidden file input */}
-        <input
-          type="file"
-          accept=".csv"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-        />
-
-        {/* Select File Button */}
-        {!file && (
-          <button
-            onClick={handleButtonClick}
-            className="rounded bg-rp-navy text-white px-4 py-2 hover:bg-blue-600 mb-6"
-          >
-            Select File
-          </button>
-        )}
-
-        {/* Display selected file */}
-        {file && <p className="text-black mb-6">Selected File: {file.name}</p>}
-
-        {/* Input for CSV Name */}
-        {file && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              CSV Name
-            </label>
+          {/* Select File Section */}
+          <div>
             <input
-              type="text"
-              value={csvName}
-              onChange={(e) => setCsvName(e.target.value)}
-              placeholder="Enter a name for the CSV"
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              type="file"
+              accept=".csv"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              style={{ display: "none" }}
             />
-            ex. id_event_MMDDYY
+            {!file ? (
+              <button
+                onClick={handleButtonClick}
+                className="w-full rounded border border-[var(--color-rp-blue)] bg-[var(--color-rp-blue)] text-white px-4 py-2 hover:bg-white hover:text-[var(--color-rp-blue)] transition duration-200"
+              >
+                Select File
+              </button>
+            ) : (
+              <p className="w-full text-center text-sm font-medium text-gray-700">
+                Selected File: <span className="text-[var(--color-rp-blue)]">{file.name}</span>
+              </p>
+            )}
           </div>
-        )}
+        </div>
 
-        {/* Dropdowns for headers */}
-        {headers.length > 0 && (
-          <div className="flex flex-col space-y-4">
-            <h3 className="text-lg font-semibold mb-4">Available Headers:</h3>
-            {headers.map((header, index) => (
-              <Dropdown
-                key={index}
-                header={header}
-                tags={tags}
-                selectedTags={selectedTags}
-                onTagSelect={handleTagSelect}
+        {/* Scrollable Content Section */}
+        {file && (
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">CSV Name</label>
+              <input
+                type="text"
+                value={csvName}
+                onChange={(e) => setCsvName(e.target.value)}
+                placeholder="Enter a name for the CSV"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[var(--color-rp-blue)] focus:border-[var(--color-rp-blue)] sm:text-sm"
               />
-            ))}
+              <p className="text-sm text-gray-500">Example: id_event_MMDDYY</p>
+            </div>
+
+            {/* Dropdowns for headers */}
+            {headers.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {headers.map((header, index) => (
+                  <Dropdown
+                    key={index}
+                    header={header}
+                    tags={tags}
+                    selectedTags={selectedTags}
+                    onTagSelect={handleTagSelect}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Display selected tags */}
+            {Object.keys(selectedTags).length > 0 && (
+              <Tags headers={headers} selectedTags={selectedTags} />
+            )}
           </div>
         )}
 
-        {/* Display selected tags */}
-        {Object.keys(selectedTags).length > 0 && (
-          <Tags headers={headers} selectedTags={selectedTags} />
-        )}
-
-        {/* Upload Button */}
-        {file && headers.length > 0 && (
+        {/* Fixed Footer Section */}
+        <div className="p-6 border-t border-gray-200 flex justify-end gap-4">
+          <button
+            onClick={() => {
+              resetState();
+              onClose();
+            }}
+            className="rounded border border-[var(--color-rp-blue)] text-[var(--color-rp-blue)] px-4 py-2 hover:bg-[var(--color-rp-blue)] hover:text-white transition duration-200"
+          >
+            Cancel
+          </button>
           <button
             onClick={handleUpload}
-            className={`rounded px-4 py-2 mt-6 ${
-              allHeadersTagged
-                ? "bg-green-500 text-white hover:bg-green-600"
+            className={`rounded px-4 py-2 border border-[var(--color-rp-blue)] ${
+              file && allHeadersTagged
+                ? "bg-[var(--color-rp-blue)] text-white hover:bg-white hover:text-[var(--color-rp-blue)] hover:border-[var(--color-rp-blue)] transition duration-200"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
-            disabled={!allHeadersTagged} // Disable button if not all headers are tagged
+            disabled={!file || !allHeadersTagged}
           >
             Upload
           </button>
-        )}
-
-        {/* Close Button */}
-        <button
-          onClick={() => {
-            resetState(); // Reset state when closing
-            onClose();
-          }}
-          className="rounded bg-red-500 text-white px-4 py-2 hover:bg-red-600 mt-6"
-        >
-          Close
-        </button>
+        </div>
       </div>
 
       {/* Notification */}

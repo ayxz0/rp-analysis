@@ -18,6 +18,65 @@ db = client["rp-analysis"]
 
 from datetime import datetime
 
+@app.route('/<event_id>/manifold', methods=['GET'])
+def get_manifold_data(event_id):
+    try:
+        # Access the MongoDB collection corresponding to the event_id
+        collection = db[event_id]
+
+        # Query the collection to fetch Time and Manifold fields
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "Manifold": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        # Calculate Time relative to the first timestamp
+        start_time = int(data[0]["Time"])  # Ensure Time is an integer
+
+        for point in data:
+            if "Time" in point and point["Time"] is not None:
+                original_time = int(point["Time"])
+                adjusted_time = (original_time - start_time) / 1_000_000_000  # Convert nanoseconds to seconds
+                point["Time"] = adjusted_time
+            else:
+                point["Time"] = 0  # Default to 0 if Time is missing
+
+        # Return the data as JSON
+        return jsonify({"data": data}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching manifold data: {str(e)}"}), 500
+
+
+@app.route('/<event_id>/burntime', methods=['GET'])
+def get_burn_time(event_id):
+    try:
+        # Access the MongoDB collection corresponding to the event_id
+        collection = db[event_id]
+
+        # Query the collection to fetch Time and Manifold fields
+        data = list(collection.find({}, {"_id": 0, "Time": 1, "Manifold": 1}))
+
+        if not data:
+            return jsonify({"error": "No data found for the given event ID"}), 404
+
+        # Convert Time to an integer and extract timestamps and manifold values
+        timestamps = [int(point["Time"]) / 1_000_000_000 for point in data]  # Convert nanoseconds to seconds
+        manifold_values = [float(point["Manifold"]) for point in data]  # Ensure Manifold is a float
+
+        # Use the find_start_and_end_times function without the buffer
+        start_time, end_time = find_start_and_end_times(
+            timestamps, manifold_values, buffer_seconds=0
+        )
+
+        # Calculate burn time
+        burn_time = end_time - start_time
+
+        return jsonify({"burn_time": burn_time, "start_time": start_time, "end_time": end_time}), 200
+    except Exception as e:
+        print(f"Error calculating burn time: {e}")  # Debugging
+        return jsonify({"error": f"Error calculating burn time: {str(e)}"}), 500
+
+
 @app.route('/collections', methods=['GET'])
 def get_collections():
     try:
@@ -219,7 +278,6 @@ def find_start_and_end_times(timestamps, manifold_values, start_slope_threshold=
     end_time = timestamps[end_index] + buffer_seconds
 
     return start_time, end_time
-
 
 def save_trimmed_csv(file_path, headers, data):
     with open(file_path, mode='w', newline='') as file:
