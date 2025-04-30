@@ -71,7 +71,7 @@ export default function UploadCSV({ onClose }: UploadCSVProps) {
     formData.append("new_csv_name", csvName);
 
     try {
-      const response = await fetch("http://localhost:5000/upload", {
+      const response = await fetch("https://rp-analysis.onrender.com/upload", {
         method: "POST",
         body: formData,
       });

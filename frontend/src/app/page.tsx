@@ -30,7 +30,7 @@ export default function Home() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const response = await fetch("http://localhost:5000/collections");
+        const response = await fetch("https://rp-analysis.onrender.com/collections");
         if (response.ok) {
           const data = await response.json();
           setCollections(data.collections);

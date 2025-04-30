@@ -11,8 +11,6 @@ load_dotenv()
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-# Create a new client and connect to the server
-
 
 
 app = Flask(__name__)
@@ -23,7 +21,12 @@ UPLOAD_FOLDER = './uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 uri = os.getenv("uri")
-client = MongoClient(uri, server_api=ServerApi('1'))
+client = MongoClient(
+    uri,
+    tls=True,  # Enable TLS/SSL
+    tlsAllowInvalidCertificates=False,  # Do not allow invalid certificates
+    server_api=ServerApi('1')  # Use Server API version 1
+)
 db = client["rp-analysis"]
 
 from datetime import datetime

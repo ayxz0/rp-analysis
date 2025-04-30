@@ -27,13 +27,13 @@ export default function EventPage() {
     const fetchData = async () => {
       try {
         const endpoints = [
-          { key: "dp", url: `http://localhost:5000/${event_id}/dp`, label: "Differential Pressure (DP) vs Time", xAxis: "Time (s)", yAxis: "DP (PSI)", yField: "DP" },
-          { key: "tank", url: `http://localhost:5000/${event_id}/tank`, label: "Tank Pressure vs Time", xAxis: "Time (s)", yAxis: "Tank Pressure (PSI)", yField: "Tank" },
-          { key: "tanklc", url: `http://localhost:5000/${event_id}/tanklc`, label: "TankLC vs Time", xAxis: "Time (s)", yAxis: "TankLC (kg)", yField: "TankLC" },
-          { key: "thrustlc", url: `http://localhost:5000/${event_id}/thrustlc`, label: "ThrustLC vs Time", xAxis: "Time (s)", yAxis: "ThrustLC (N)", yField: "ThrustLC" },
-          { key: "pressures", url: `http://localhost:5000/${event_id}/pressures`, label: "Pressures (Chamber, Manifold, Tank) vs Time", xAxis: "Time (s)", yAxis: "Pressure (PSI)", yFields: ["Chamber", "Manifold", "Tank"] },
-          { key: "mdot", url: `http://localhost:5000/${event_id}/mdot`, label: "Mass Flow Rate (Mdot) vs Time", xAxis: "Time (s)", yAxis: "Mdot (kg/s)", yField: "Mdot" },
-          { key: "stiff", url: `http://localhost:5000/${event_id}/stiff`, label: "Injector Stiffness vs Time", xAxis: "Time (s)", yAxis: "Stiffness", yField: "Stiffness" },
+          { key: "dp", url: `https://rp-analysis.onrender.com/${event_id}/dp`, label: "Differential Pressure (DP) vs Time", xAxis: "Time (s)", yAxis: "DP (PSI)", yField: "DP" },
+          { key: "tank", url: `https://rp-analysis.onrender.com/${event_id}/tank`, label: "Tank Pressure vs Time", xAxis: "Time (s)", yAxis: "Tank Pressure (PSI)", yField: "Tank" },
+          { key: "tanklc", url: `https://rp-analysis.onrender.com/${event_id}/tanklc`, label: "TankLC vs Time", xAxis: "Time (s)", yAxis: "TankLC (kg)", yField: "TankLC" },
+          { key: "thrustlc", url: `https://rp-analysis.onrender.com/${event_id}/thrustlc`, label: "ThrustLC vs Time", xAxis: "Time (s)", yAxis: "ThrustLC (N)", yField: "ThrustLC" },
+          { key: "pressures", url: `https://rp-analysis.onrender.com/${event_id}/pressures`, label: "Pressures (Chamber, Manifold, Tank) vs Time", xAxis: "Time (s)", yAxis: "Pressure (PSI)", yFields: ["Chamber", "Manifold", "Tank"] },
+          { key: "mdot", url: `https://rp-analysis.onrender.com/${event_id}/mdot`, label: "Mass Flow Rate (Mdot) vs Time", xAxis: "Time (s)", yAxis: "Mdot (kg/s)", yField: "Mdot" },
+          { key: "stiff", url: `https://rp-analysis.onrender.com/${event_id}/stiff`, label: "Injector Stiffness vs Time", xAxis: "Time (s)", yAxis: "Stiffness", yField: "Stiffness" },
         ];
 
         const graphData = await Promise.all(
@@ -114,7 +114,7 @@ export default function EventPage() {
         let peakMdot = null;
 
         try {
-          const peakThrustResponse = await fetch(`http://localhost:5000/${event_id}/peakThrust`);
+          const peakThrustResponse = await fetch(`https://rp-analysis.onrender.com/${event_id}/peakThrust`);
           if (peakThrustResponse.ok) {
             const thrustData = await peakThrustResponse.json();
             peakThrust = thrustData.peakThrust;
@@ -126,7 +126,7 @@ export default function EventPage() {
         }
 
         try {
-          const peakChamberResponse = await fetch(`http://localhost:5000/${event_id}/peakChamber`);
+          const peakChamberResponse = await fetch(`https://rp-analysis.onrender.com/${event_id}/peakChamber`);
           if (peakChamberResponse.ok) {
             const chamberData = await peakChamberResponse.json();
             peakChamber = chamberData.peakChamber;
@@ -138,7 +138,7 @@ export default function EventPage() {
         }
 
         try {
-          const dataRateResponse = await fetch(`http://localhost:5000/${event_id}/dataRate`);
+          const dataRateResponse = await fetch(`https://rp-analysis.onrender.com/${event_id}/dataRate`);
           if (dataRateResponse.ok) {
             const rateData = await dataRateResponse.json();
             dataRate = rateData.dataRate;
@@ -150,7 +150,7 @@ export default function EventPage() {
         }
 
         try {
-          const burnTimeResponse = await fetch(`http://localhost:5000/${event_id}/burntime`);
+          const burnTimeResponse = await fetch(`https://rp-analysis.onrender.com/${event_id}/burntime`);
           if (burnTimeResponse.ok) {
             const burnTimeData = await burnTimeResponse.json();
             burnTime = burnTimeData.burn_time;
@@ -162,7 +162,7 @@ export default function EventPage() {
         }
 
         try {
-          const peakMdotResponse = await fetch(`http://localhost:5000/${event_id}/peakMdot`);
+          const peakMdotResponse = await fetch(`https://rp-analysis.onrender.com/${event_id}/peakMdot`);
           if (peakMdotResponse.ok) {
             const mdotData = await peakMdotResponse.json();
             peakMdot = mdotData.peakMdot;

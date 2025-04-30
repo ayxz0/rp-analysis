@@ -15,7 +15,7 @@ export default function DataPanel() {
           throw new Error("Event ID is missing");
         }
 
-        const response = await fetch(`http://localhost:5000/${event_id}/burntime`);
+        const response = await fetch(`https://rp-analysis.onrender.com/${event_id}/burntime`);
         if (!response.ok) {
           throw new Error("Failed to fetch burn time");
         }
