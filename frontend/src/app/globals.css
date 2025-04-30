@@ -36,3 +36,29 @@ body {
   background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
   z-index: 50; /* Ensure it appears above other content */
 }
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(50px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateX(50px) rotate(-360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 2s linear infinite;
+}
+
+.animate-orbit {
+  animation: orbit 4s linear infinite;
+}

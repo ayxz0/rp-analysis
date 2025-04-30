@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Header from ".././components/Header";
 import Graph from ".././components/Graph";
 import DataPanel from ".././components/DataPanel";
+import LoadingPage from ".././components/LoadingPage"; // Import the new component
 
 export default function EventPage() {
   const { event_id } = useParams() ?? {}; // Get the event ID from the URL
@@ -49,7 +50,7 @@ export default function EventPage() {
     fetchData();
   }, [event_id]);
 
-  if (loading) return <p>Loading graph...</p>;
+  if (loading) return <LoadingPage />; // Use the new LoadingPage component
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
@@ -59,7 +60,7 @@ export default function EventPage() {
 
       {/* Event Content */}
       <div className="p-6">
-        <h1 className="text-3xl font-bold text-rp-blue mb-4">Event: {event_id}</h1>
+        <h1 className="text-3xl font-bold text-rp-blue mb-4">{event_id}</h1>
         <p className="text-gray-600 mb-6">Below is the graph for the event data:</p>
 
         {/* Layout for Graph and Data Panel */}

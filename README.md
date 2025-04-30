@@ -2,10 +2,18 @@
 Data Analysis for Rocket Project
 
 ## frontend
-===
 `npm run dev`
 
 ## backend
-===
 `flask run`
-`requirements.txt`
+
+Install: `requirements.txt`
+
+#### Techstack
+- React.js
+- Next.js
+- TailwindCSS
+- Chart.js
+- MongoDB
+- Vercel
+- Flask
