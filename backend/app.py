@@ -5,18 +5,41 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from pymongo import MongoClient
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+# Create a new client and connect to the server
+
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+host='0.0.0.0'
 
 UPLOAD_FOLDER = './uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# MongoDB setup
-client = MongoClient("mongodb://localhost:27017/")
+uri = os.getenv("uri")
+client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["rp-analysis"]
 
 from datetime import datetime
+
+@app.route('/', methods=['GET'])
+def home():
+    return "Hello, World!", 200
+
+@app.route('/test-mongo', methods=['GET'])
+def test_mongo():
+    try:
+        # Test the connection by listing collections
+        collections = db.list_collection_names()
+        return jsonify({"status": "success", "collections": collections}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/<event_id>/manifold', methods=['GET'])
 def get_manifold_data(event_id):
