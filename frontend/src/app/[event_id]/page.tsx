@@ -216,8 +216,8 @@ export default function EventPage() {
           </div>
 
             {/* Data Panel */}
-            <div className="p-4 border border-gray-300 rounded-lg shadow-sm bg-white sticky top-28 h-75">
-            <h2 className="text-2xl font-bold text-rp-blue mb-4">Data Panel</h2>
+            <div className="p-4 border border-gray-300 rounded-lg shadow-sm bg-white sticky top-28 h-72">
+            <h2 className="text-2xl font-bold text-rp-blue mb-4">Data: {eventId}</h2>
             <ul className="space-y-4 text-lg text-rp-blue">
                 <li>
                 <strong>Peak Thrust (LC):</strong> {dataPanelValues.peakThrust ?? "N/A"} N
