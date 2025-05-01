@@ -479,6 +479,9 @@ def find_start_and_end_times(timestamps, manifold_values, start_slope_threshold=
 
     # Detect the start of flow based on slope
     for i in range(1, len(manifold_values)):
+        time_diff = timestamps[i] - timestamps[i - 1]
+        if time_diff == 0:
+            continue 
         slope = (manifold_values[i] - manifold_values[i - 1]) / (timestamps[i] - timestamps[i - 1])
         if start_index is None and slope > start_slope_threshold:
             start_index = i
