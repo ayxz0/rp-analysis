@@ -51,8 +51,8 @@ export default function EventPage() {
                     .map((point: any) => ({
                       x: point.Time,
                       y: point[field],
-                    }))
-                    .filter((point: any) => point.y !== 500), // Exclude points with y = 500
+                    })),
+                    //.filter((point: any) => point.y !== 500), // why did i do this???? >>
                   borderColor: field === "Chamber" ? "#FF5733" : field === "Manifold" ? "#33C3FF" : "#33FF57", // Different colors for each field
                   backgroundColor: "rgba(0, 0, 0, 0)", // Transparent background
                 }));
